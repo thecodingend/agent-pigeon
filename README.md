@@ -1,24 +1,35 @@
-# README
+# Rails Starter
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Starter template for new Rails projects.
 
-Things you may want to cover:
+## Start a New Project
 
-* Ruby version
+1. Clone this repository for the new project.
+2. Change the default Git remote to the new project repository:
 
-* System dependencies
+```sh
+git remote set-url origin git@github.com:YOUR_USER_OR_ORG/YOUR_NEW_REPO.git
+git remote -v
+```
 
-* Configuration
+3. Start the app:
 
-* Database creation
+```sh
+docker compose up -d
+bin/rails db:create
+bin/dev
+```
 
-* Database initialization
+## Required Skills
 
-* How to run the test suite
+Install the project skills:
 
-* Services (job queues, cache servers, search engines, etc.)
+```sh
+npx skills add inertia-rails/skills
+npx skills add pbakaus/impeccable
+```
 
-* Deployment instructions
+References:
 
-* ...
+- [inertia-rails/skills](https://github.com/inertia-rails/skills)
+- [impeccable](https://impeccable.style/)
