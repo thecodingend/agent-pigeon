@@ -23,10 +23,11 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
 
+    "baseUrl": ".",
+
     /* Aliases */
     "paths": {
-      "@/*": ["./app/frontend/*"],
-      "~/*": ["./app/frontend/*"]
+      "@/*": ["./app/frontend/*"]
     }
   },
   "include": ["app/frontend"]
