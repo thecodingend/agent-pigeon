@@ -1,0 +1,12 @@
+regular:
+  email: regular@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+  confirmed_at: <%= Time.current %>
+  role: 0
+
+admin:
+  email: admin@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, "password123") %>
+  confirmed_at: <%= Time.current %>
+  role: 1
+# column: value
