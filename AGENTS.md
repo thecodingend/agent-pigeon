@@ -1,6 +1,6 @@
 ## App Context
 
-[Insert high level description of the app]
+Agent Pigeon is an email-native AI agent platform. Users create configurable agents, each agent gets a real email address and lives inside real inboxes. The dashboard is for setting agents up and then getting out of the way — the actual work happens over email. The audience is mixed: founders and ops leads side-by-side with developers and power users, so the interface should feel approachable on the surface and reveal real depth on demand.
 
 ## Inertia Rails Stack
 
