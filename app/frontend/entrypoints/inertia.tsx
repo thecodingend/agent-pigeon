@@ -1,9 +1,23 @@
-import { createInertiaApp } from '@inertiajs/react'
+import { StrictMode } from "react"
+import { createRoot } from "react-dom/client"
+import { createInertiaApp, router } from "@inertiajs/react"
+import { toast } from "sonner"
+
+import { Toaster } from "@/components/ui/sonner"
+import type { FlashData } from "@/types"
+
+function flashToast(flash: FlashData | null | undefined) {
+  if (!flash) return
+  if (flash.notice) toast.success(flash.notice)
+  if (flash.alert) toast.error(flash.alert)
+}
+
+router.on("success", (event) => {
+  flashToast(event.detail.page.props.flash)
+})
 
 void createInertiaApp({
   pages: "../pages",
-
-  strictMode: true,
 
   defaults: {
     form: {
@@ -13,6 +27,17 @@ void createInertiaApp({
     visitOptions: () => {
       return { queryStringArrayFormat: "brackets" }
     },
+  },
+
+  setup({ el, App, props }) {
+    flashToast(props.initialPage.props.flash)
+
+    createRoot(el).render(
+      <StrictMode>
+        <App {...props} />
+        <Toaster />
+      </StrictMode>,
+    )
   },
 }).catch((error) => {
   // This ensures this entrypoint is only loaded on Inertia pages

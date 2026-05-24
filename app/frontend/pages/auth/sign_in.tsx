@@ -11,7 +11,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/in
 import type { SharedProps } from "@/types"
 
 export default function SignIn() {
-  const { csrf_token, flash } = usePage<SharedProps>().props
+  const { csrf_token } = usePage<SharedProps>().props
 
   return (
     <Card className="w-full max-w-sm gap-6 shadow-sm">
@@ -23,12 +23,6 @@ export default function SignIn() {
       </CardHeader>
 
       <CardContent className="flex flex-col gap-6">
-        {(flash?.notice || flash?.alert) && (
-          <div className="rounded-md border bg-muted p-3 text-sm">
-            {flash.notice || flash.alert}
-          </div>
-        )}
-
         <form action="/users/auth/google_oauth2" method="post">
           <input type="hidden" name="authenticity_token" value={csrf_token} />
           <Button type="submit" variant="outline" className="w-full">
