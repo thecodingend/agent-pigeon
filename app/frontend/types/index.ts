@@ -11,10 +11,16 @@ export type AuthUser = {
   role: UserRole
 }
 
+export type NavContext = {
+  domain_verified: boolean
+  domain_hostname: string | null
+} | null
+
 export type SharedProps = {
   auth: {
     user: AuthUser | null
   }
   csrf_token: string
   flash: FlashData
+  nav: NavContext
 }

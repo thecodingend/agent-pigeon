@@ -4,7 +4,7 @@ import { createInertiaApp, router } from "@inertiajs/react"
 import { toast } from "sonner"
 
 import { Toaster } from "@/components/ui/sonner"
-import type { FlashData } from "@/types"
+import type { FlashData, SharedProps } from "@/types"
 
 function flashToast(flash: FlashData | null | undefined) {
   if (!flash) return
@@ -12,8 +12,12 @@ function flashToast(flash: FlashData | null | undefined) {
   if (flash.alert) toast.error(flash.alert)
 }
 
+function sharedProps(props: unknown): SharedProps {
+  return props as SharedProps
+}
+
 router.on("success", (event) => {
-  flashToast(event.detail.page.props.flash)
+  flashToast(sharedProps(event.detail.page.props).flash)
 })
 
 void createInertiaApp({
@@ -30,7 +34,9 @@ void createInertiaApp({
   },
 
   setup({ el, App, props }) {
-    flashToast(props.initialPage.props.flash)
+    if (!el) throw new Error("Missing Inertia root element")
+
+    flashToast(sharedProps(props.initialPage.props).flash)
 
     createRoot(el).render(
       <StrictMode>

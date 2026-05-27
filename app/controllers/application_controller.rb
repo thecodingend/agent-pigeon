@@ -4,11 +4,25 @@ class ApplicationController < ActionController::Base
   # Only allow modern browsers supporting webp images, web push, badges, import maps, CSS nesting, and CSS :has.
   allow_browser versions: :modern
 
-  inertia_share auth: -> { { user: current_user&.as_json(only: [ :id, :email, :role ]) } }
+  inertia_share auth: -> { { user: current_user && { id: current_user.id, email: current_user.email, role: current_user.role } } }
   inertia_share csrf_token: -> { form_authenticity_token }
   inertia_share flash: -> { { notice: flash.notice, alert: flash.alert } }
+  inertia_share nav: lambda {
+    next nil unless current_user
+    domain = current_user.domain
+    {
+      domain_verified: domain&.verified? || false,
+      domain_hostname: domain&.hostname
+    }
+  }
 
   rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
+
+  protected
+
+  def after_sign_in_path_for(_resource)
+    authenticated_root_path
+  end
 
   private
 
