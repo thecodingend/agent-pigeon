@@ -6,6 +6,15 @@ class User < ApplicationRecord
     :confirmable, :omniauthable,
     omniauth_providers: [ :google_oauth2 ]
 
+  has_one :domain, dependent: :destroy
+  has_many :agents, dependent: :destroy
+  has_many :api_connectors, dependent: :destroy
+  has_many :web_connectors, dependent: :destroy
+
+  def domain_verified?
+    domain&.verified?
+  end
+
   def self.from_google(auth)
     user = find_by(provider: auth.provider, uid: auth.uid) ||
       find_or_initialize_by(email: auth.info.email.downcase)

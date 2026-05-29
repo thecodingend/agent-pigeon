@@ -9,15 +9,15 @@ class ApplicationPolicy
   end
 
   def index?
-    false
+    user.present?
   end
 
   def show?
-    false
+    owner?
   end
 
   def create?
-    false
+    user.present?
   end
 
   def new?
@@ -25,7 +25,7 @@ class ApplicationPolicy
   end
 
   def update?
-    false
+    owner?
   end
 
   def edit?
@@ -33,7 +33,13 @@ class ApplicationPolicy
   end
 
   def destroy?
-    false
+    owner?
+  end
+
+  private
+
+  def owner?
+    user.present? && record.respond_to?(:user_id) && record.user_id == user.id
   end
 
   class Scope
@@ -43,7 +49,7 @@ class ApplicationPolicy
     end
 
     def resolve
-      raise NoMethodError, "You must define #resolve in #{self.class}"
+      scope.where(user_id: user.id)
     end
 
     private

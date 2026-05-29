@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_19_201100) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_24_132556) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,11 +42,125 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_19_201100) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "agent_api_connectors", force: :cascade do |t|
+    t.bigint "agent_id", null: false
+    t.bigint "api_connector_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["agent_id", "api_connector_id"], name: "index_agent_api_connectors_on_agent_id_and_api_connector_id", unique: true
+    t.index ["agent_id"], name: "index_agent_api_connectors_on_agent_id"
+    t.index ["api_connector_id"], name: "index_agent_api_connectors_on_api_connector_id"
+  end
+
+  create_table "agent_web_connectors", force: :cascade do |t|
+    t.bigint "agent_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "web_connector_id", null: false
+    t.index ["agent_id", "web_connector_id"], name: "index_agent_web_connectors_on_agent_id_and_web_connector_id", unique: true
+    t.index ["agent_id"], name: "index_agent_web_connectors_on_agent_id"
+    t.index ["web_connector_id"], name: "index_agent_web_connectors_on_web_connector_id"
+  end
+
+  create_table "agents", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "domain_id", null: false
+    t.integer "email_threads_count", default: 0, null: false
+    t.integer "inbox_policy", default: 0, null: false
+    t.datetime "last_activity_at"
+    t.string "local_part", null: false
+    t.string "name", null: false
+    t.integer "status", default: 0, null: false
+    t.text "system_prompt", default: "", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["domain_id", "local_part"], name: "index_agents_on_domain_id_and_local_part", unique: true
+    t.index ["domain_id"], name: "index_agents_on_domain_id"
+    t.index ["user_id"], name: "index_agents_on_user_id"
+  end
+
+  create_table "allowlist_entries", force: :cascade do |t|
+    t.bigint "agent_id", null: false
+    t.datetime "created_at", null: false
+    t.string "pattern", null: false
+    t.datetime "updated_at", null: false
+    t.index ["agent_id", "pattern"], name: "index_allowlist_entries_on_agent_id_and_pattern", unique: true
+    t.index ["agent_id"], name: "index_allowlist_entries_on_agent_id"
+  end
+
+  create_table "api_connectors", force: :cascade do |t|
+    t.integer "agents_count", default: 0, null: false
+    t.text "auth_token"
+    t.string "base_url", null: false
+    t.datetime "created_at", null: false
+    t.text "description", default: "", null: false
+    t.integer "http_method", default: 0, null: false
+    t.string "name", null: false
+    t.jsonb "request_example", default: {}, null: false
+    t.jsonb "response_example", default: {}, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_api_connectors_on_user_id"
+  end
+
   create_table "chats", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.bigint "email_thread_id"
     t.bigint "model_id"
     t.datetime "updated_at", null: false
+    t.index ["email_thread_id"], name: "index_chats_on_email_thread_id"
     t.index ["model_id"], name: "index_chats_on_model_id"
+  end
+
+  create_table "domains", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "dns_records", default: [], null: false
+    t.string "hostname", null: false
+    t.string "resend_domain_id"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.datetime "verified_at"
+    t.index ["hostname"], name: "index_domains_on_hostname", unique: true
+    t.index ["user_id"], name: "index_domains_on_user_id", unique: true
+  end
+
+  create_table "email_messages", force: :cascade do |t|
+    t.jsonb "cc_emails", default: [], null: false
+    t.datetime "created_at", null: false
+    t.datetime "delivered_at"
+    t.integer "direction", null: false
+    t.bigint "email_thread_id", null: false
+    t.string "from_email", null: false
+    t.text "html"
+    t.string "in_reply_to"
+    t.bigint "message_id"
+    t.string "mime_message_id"
+    t.integer "provider", default: 0, null: false
+    t.string "provider_message_id"
+    t.jsonb "provider_payload", default: {}, null: false
+    t.datetime "received_at"
+    t.text "references_header", default: [], null: false, array: true
+    t.string "subject", default: "", null: false
+    t.text "text"
+    t.jsonb "to_emails", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.index ["email_thread_id", "created_at"], name: "index_email_messages_on_email_thread_id_and_created_at"
+    t.index ["email_thread_id"], name: "index_email_messages_on_email_thread_id"
+    t.index ["message_id"], name: "index_email_messages_on_message_id"
+    t.index ["provider", "provider_message_id"], name: "index_email_messages_on_provider_and_provider_message_id", unique: true, where: "(provider_message_id IS NOT NULL)"
+  end
+
+  create_table "email_threads", force: :cascade do |t|
+    t.bigint "agent_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "last_activity_at", null: false
+    t.text "participants", default: [], null: false, array: true
+    t.string "root_message_id"
+    t.string "subject", default: "", null: false
+    t.datetime "updated_at", null: false
+    t.index ["agent_id", "last_activity_at"], name: "index_email_threads_on_agent_id_and_last_activity_at", order: { last_activity_at: :desc }
+    t.index ["agent_id"], name: "index_email_threads_on_agent_id"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -127,11 +241,36 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_19_201100) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "web_connectors", force: :cascade do |t|
+    t.integer "agents_count", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.text "description", default: "", null: false
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
+    t.text "urls", default: [], null: false, array: true
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_web_connectors_on_user_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "agent_api_connectors", "agents"
+  add_foreign_key "agent_api_connectors", "api_connectors"
+  add_foreign_key "agent_web_connectors", "agents"
+  add_foreign_key "agent_web_connectors", "web_connectors"
+  add_foreign_key "agents", "domains"
+  add_foreign_key "agents", "users"
+  add_foreign_key "allowlist_entries", "agents"
+  add_foreign_key "api_connectors", "users"
+  add_foreign_key "chats", "email_threads"
   add_foreign_key "chats", "models"
+  add_foreign_key "domains", "users"
+  add_foreign_key "email_messages", "email_threads"
+  add_foreign_key "email_messages", "messages"
+  add_foreign_key "email_threads", "agents"
   add_foreign_key "messages", "chats"
   add_foreign_key "messages", "models"
   add_foreign_key "messages", "tool_calls"
   add_foreign_key "tool_calls", "messages"
+  add_foreign_key "web_connectors", "users"
 end
