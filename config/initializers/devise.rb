@@ -277,6 +277,7 @@ Devise.setup do |config|
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
   google_oauth2_credentials = Rails.application.credentials.dig(:omniauth, :google_oauth2)
+  google_oauth2_credentials ||= { public_key: "test-google-client-id", private_key: "test-google-client-secret" } if Rails.env.test?
 
   config.omniauth :google_oauth2,
     google_oauth2_credentials.fetch(:public_key),
