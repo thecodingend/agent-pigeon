@@ -13,9 +13,14 @@ type Props = {
     description: string
     base_url: string
     http_method: "get" | "post"
-    auth_token: string
+    auth_type: "bearer"
     request_example_text: string
     response_example_text: string
+    query_schema_text: string
+    response_schema_text: string
+    timeout_seconds: number
+    max_response_bytes: number
+    enabled: boolean
   }
 }
 
@@ -102,7 +107,6 @@ export default function NewApiSource({ api_connector }: Props) {
                 <Input
                   name="api_connector[auth_token]"
                   type="password"
-                  defaultValue={api_connector.auth_token}
                   placeholder="sk_live_..."
                   autoComplete="off"
                   className="font-mono"
@@ -110,32 +114,71 @@ export default function NewApiSource({ api_connector }: Props) {
                 <FieldError>{errors.auth_token?.[0]}</FieldError>
               </Field>
 
-              <Field data-invalid={Boolean(errors.request_example)}>
-                <FieldLabel>Request payload example (JSON)</FieldLabel>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field data-invalid={Boolean(errors.timeout_seconds)}>
+                  <FieldLabel>Timeout seconds</FieldLabel>
+                  <Input
+                    name="api_connector[timeout_seconds]"
+                    type="number"
+                    min={1}
+                    max={30}
+                    defaultValue={api_connector.timeout_seconds}
+                    className="font-mono"
+                  />
+                  <FieldError>{errors.timeout_seconds?.[0]}</FieldError>
+                </Field>
+
+                <Field data-invalid={Boolean(errors.max_response_bytes)}>
+                  <FieldLabel>Max response bytes</FieldLabel>
+                  <Input
+                    name="api_connector[max_response_bytes]"
+                    type="number"
+                    min={1}
+                    defaultValue={api_connector.max_response_bytes}
+                    className="font-mono"
+                  />
+                  <FieldError>{errors.max_response_bytes?.[0]}</FieldError>
+                </Field>
+              </div>
+
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input type="hidden" name="api_connector[enabled]" value="0" />
+                <input
+                  type="checkbox"
+                  name="api_connector[enabled]"
+                  value="1"
+                  defaultChecked={api_connector.enabled}
+                  className="accent-primary"
+                />
+                Enabled
+              </label>
+
+              <Field data-invalid={Boolean(errors.query_schema)}>
+                <FieldLabel>Query schema (JSON)</FieldLabel>
                 <Textarea
-                  name="api_connector[request_example_text]"
-                  defaultValue={api_connector.request_example_text}
-                  placeholder='{"query": "string"}'
+                  name="api_connector[query_schema_text]"
+                  defaultValue={api_connector.query_schema_text}
+                  placeholder='{"type":"object","properties":{"query":{"type":"string"}},"required":["query"]}'
                   rows={5}
                   className="font-mono text-xs"
                 />
-                <FieldError>{errors.request_example?.[0]}</FieldError>
+                <FieldError>{errors.query_schema?.[0]}</FieldError>
               </Field>
             </section>
 
             <SectionDivider label="Response" />
 
             <section className="flex flex-col gap-5">
-              <Field data-invalid={Boolean(errors.response_example)}>
-                <FieldLabel>Response shape example (JSON)</FieldLabel>
+              <Field data-invalid={Boolean(errors.response_schema)}>
+                <FieldLabel>Response schema (JSON)</FieldLabel>
                 <Textarea
-                  name="api_connector[response_example_text]"
-                  defaultValue={api_connector.response_example_text}
-                  placeholder='{"id": "cus_123", "email": "ada@example.com"}'
+                  name="api_connector[response_schema_text]"
+                  defaultValue={api_connector.response_schema_text}
+                  placeholder='{"type":"object","properties":{"id":{"type":"string"}},"required":["id"]}'
                   rows={8}
                   className="font-mono text-xs"
                 />
-                <FieldError>{errors.response_example?.[0]}</FieldError>
+                <FieldError>{errors.response_schema?.[0]}</FieldError>
               </Field>
             </section>
 

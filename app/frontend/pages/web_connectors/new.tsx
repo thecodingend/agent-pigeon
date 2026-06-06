@@ -13,6 +13,11 @@ type Props = {
     name: string
     description: string
     urls: string[]
+    max_depth: number
+    max_pages: number
+    delay_seconds: number
+    concurrency: number
+    allow_pdfs: boolean
   }
 }
 
@@ -100,6 +105,74 @@ export default function NewWebSource({ web_connector }: Props) {
               </div>
 
               <FieldError>{errors.urls?.[0]}</FieldError>
+            </section>
+
+            <SectionDivider label="Crawl policy" />
+
+            <section className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Field data-invalid={Boolean(errors.max_depth)}>
+                <FieldLabel>Max depth</FieldLabel>
+                <Input
+                  name="web_connector[max_depth]"
+                  type="number"
+                  min={0}
+                  max={3}
+                  defaultValue={web_connector.max_depth}
+                  className="font-mono"
+                />
+                <FieldError>{errors.max_depth?.[0]}</FieldError>
+              </Field>
+
+              <Field data-invalid={Boolean(errors.max_pages)}>
+                <FieldLabel>Max pages</FieldLabel>
+                <Input
+                  name="web_connector[max_pages]"
+                  type="number"
+                  min={1}
+                  max={100}
+                  defaultValue={web_connector.max_pages}
+                  className="font-mono"
+                />
+                <FieldError>{errors.max_pages?.[0]}</FieldError>
+              </Field>
+
+              <Field data-invalid={Boolean(errors.delay_seconds)}>
+                <FieldLabel>Delay seconds</FieldLabel>
+                <Input
+                  name="web_connector[delay_seconds]"
+                  type="number"
+                  min={0}
+                  max={10}
+                  defaultValue={web_connector.delay_seconds}
+                  className="font-mono"
+                />
+                <FieldError>{errors.delay_seconds?.[0]}</FieldError>
+              </Field>
+
+              <Field data-invalid={Boolean(errors.concurrency)}>
+                <FieldLabel>Concurrency</FieldLabel>
+                <Input
+                  name="web_connector[concurrency]"
+                  type="number"
+                  min={1}
+                  max={5}
+                  defaultValue={web_connector.concurrency}
+                  className="font-mono"
+                />
+                <FieldError>{errors.concurrency?.[0]}</FieldError>
+              </Field>
+
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <input type="hidden" name="web_connector[allow_pdfs]" value="0" />
+                <input
+                  type="checkbox"
+                  name="web_connector[allow_pdfs]"
+                  value="1"
+                  defaultChecked={web_connector.allow_pdfs}
+                  className="accent-primary"
+                />
+                Allow PDFs
+              </label>
             </section>
 
             <div className="flex items-center gap-3 pt-4">
