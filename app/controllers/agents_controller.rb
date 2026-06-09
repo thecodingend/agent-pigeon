@@ -1,4 +1,28 @@
 class AgentsController < InertiaController
+  EMAIL_LOCAL_PART_OPTIONS = %w[help support hello ops sales billing].freeze
+  PROMPT_TEMPLATES = [
+    {
+      key: "support",
+      name: "Support",
+      system_prompt: "You are a helpful support agent. Read the full email thread before replying, answer clearly, and use attached tools only when they can improve accuracy. If a customer asks for something you cannot verify, say what information is missing and ask one concise follow-up question."
+    },
+    {
+      key: "ops",
+      name: "Operations",
+      system_prompt: "You are an operations assistant. Triage incoming requests, identify the next action, and keep replies practical and brief. Use connected sources to check facts before making commitments, and call out blockers plainly."
+    },
+    {
+      key: "sales_research",
+      name: "Sales research",
+      system_prompt: "You are a sales research assistant. Help qualify leads and prepare useful replies by looking for relevant company, contact, and product context in the connected sources. Keep responses specific, professional, and easy to forward."
+    },
+    {
+      key: "custom",
+      name: "Custom",
+      system_prompt: ""
+    }
+  ].freeze
+
   before_action :set_agent, only: [ :show, :edit, :update, :destroy ]
   before_action :require_verified_domain, only: [ :new, :create ]
 
@@ -9,9 +33,12 @@ class AgentsController < InertiaController
 
   def new
     authorize Agent
+    agent = current_user.agents.new(domain: current_user.domain)
     render inertia: {
-      agent: { id: nil, name: "", local_part: "", system_prompt: "", status: "active", inbox_policy: "open", api_connector_ids: [], web_connector_ids: [], allowlist_patterns: [] },
+      agent: serialize_agent_for_form(agent),
       domain: serialize_domain(current_user.domain),
+      email_options: email_options_for(agent),
+      prompt_templates: PROMPT_TEMPLATES,
       connectors: connector_picker_options
     }
   end
@@ -47,6 +74,8 @@ class AgentsController < InertiaController
     render inertia: {
       agent: serialize_agent_for_form(@agent),
       domain: serialize_domain(current_user.domain),
+      email_options: email_options_for(@agent),
+      prompt_templates: PROMPT_TEMPLATES,
       connectors: connector_picker_options
     }
   end
@@ -80,7 +109,7 @@ class AgentsController < InertiaController
   end
 
   def agent_params
-    params.expect(agent: [ :name, :local_part, :system_prompt, :status, :inbox_policy ])
+    params.expect(agent: [ :name, :local_part, :system_prompt, :status, :inbox_policy, :context_policy ])
   end
 
   def attach_connectors(agent)
@@ -107,7 +136,23 @@ class AgentsController < InertiaController
     web = policy_scope(WebConnector).order(:name).map do |c|
       { id: c.id, kind: "web", name: c.name, description: c.description, summary: "#{c.urls.size} #{'URL'.pluralize(c.urls.size)}" }
     end
-    api + web
+    { api: api, web: web }
+  end
+
+  def email_options_for(agent)
+    domain = agent.domain || current_user.domain
+    taken = current_user.agents.where(domain: domain).where.not(id: agent.id).pluck(:local_part)
+    local_parts = (EMAIL_LOCAL_PART_OPTIONS + current_user.agents.where(domain: domain).pluck(:local_part) + [ agent.local_part ]).compact.reject(&:blank?).uniq
+
+    local_parts.map do |local_part|
+      current = local_part == agent.local_part
+      {
+        local_part: local_part,
+        email_address: "#{local_part}@#{domain.hostname}",
+        available: current || !taken.include?(local_part),
+        current: current
+      }
+    end
   end
 
   def serialize_agent(agent)
@@ -115,9 +160,10 @@ class AgentsController < InertiaController
       id: agent.id,
       name: agent.name,
       local_part: agent.local_part,
-      email_address: agent.email_address,
+      email_address: agent.local_part.present? ? agent.email_address : nil,
       status: agent.status,
       inbox_policy: agent.inbox_policy,
+      context_policy: agent.context_policy,
       system_prompt: agent.system_prompt,
       created_at: agent.created_at,
       threads_count: agent.email_threads_count,
@@ -127,9 +173,9 @@ class AgentsController < InertiaController
 
   def serialize_agent_for_form(agent)
     serialize_agent(agent).merge(
-      api_connector_ids: agent.agent_api_connectors.pluck(:api_connector_id),
-      web_connector_ids: agent.agent_web_connectors.pluck(:web_connector_id),
-      allowlist_patterns: agent.allowlist_entries.order(:id).pluck(:pattern)
+      api_connector_ids: agent.persisted? ? agent.agent_api_connectors.pluck(:api_connector_id) : [],
+      web_connector_ids: agent.persisted? ? agent.agent_web_connectors.pluck(:web_connector_id) : [],
+      allowlist_patterns: agent.persisted? ? agent.allowlist_entries.order(:id).pluck(:pattern) : []
     )
   end
 

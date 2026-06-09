@@ -14,6 +14,7 @@ class Agent < ApplicationRecord
 
   enum :status, { active: 0, paused: 1 }, default: :active
   enum :inbox_policy, { open: 0, allowlist: 1 }, default: :open
+  enum :context_policy, { thread_history: 0, last_message_only: 1 }, default: :thread_history
 
   validates :name, presence: true
   validates :local_part,
