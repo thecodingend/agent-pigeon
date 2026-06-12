@@ -1,7 +1,18 @@
 class WebConnectorsController < InertiaController
   def new
     authorize WebConnector
-    render inertia: { web_connector: { name: "", description: "", urls: [ "" ] } }
+    render inertia: {
+      web_connector: {
+        name: "",
+        description: "",
+        urls: [ "" ],
+        max_depth: WebConnector::DEFAULT_MAX_DEPTH,
+        max_pages: WebConnector::DEFAULT_MAX_PAGES,
+        delay_seconds: WebConnector::DEFAULT_DELAY_SECONDS,
+        concurrency: WebConnector::DEFAULT_CONCURRENCY,
+        allow_pdfs: false
+      }
+    }
   end
 
   def create
@@ -25,6 +36,6 @@ class WebConnectorsController < InertiaController
   private
 
   def web_connector_params
-    params.expect(web_connector: [ :name, :description, urls: [] ])
+    params.expect(web_connector: [ :name, :description, :max_depth, :max_pages, :delay_seconds, :concurrency, :allow_pdfs, urls: [] ])
   end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_24_132556) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_06_083708) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -91,13 +91,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_132556) do
   create_table "api_connectors", force: :cascade do |t|
     t.integer "agents_count", default: 0, null: false
     t.text "auth_token"
+    t.string "auth_type", default: "bearer", null: false
     t.string "base_url", null: false
     t.datetime "created_at", null: false
     t.text "description", default: "", null: false
+    t.boolean "enabled", default: true, null: false
     t.integer "http_method", default: 0, null: false
+    t.integer "max_response_bytes", default: 1048576, null: false
     t.string "name", null: false
+    t.jsonb "query_schema", default: {}, null: false
     t.jsonb "request_example", default: {}, null: false
     t.jsonb "response_example", default: {}, null: false
+    t.jsonb "response_schema", default: {}, null: false
+    t.integer "timeout_seconds", default: 10, null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_api_connectors_on_user_id"
@@ -243,8 +249,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_132556) do
 
   create_table "web_connectors", force: :cascade do |t|
     t.integer "agents_count", default: 0, null: false
+    t.boolean "allow_pdfs", default: false, null: false
+    t.integer "concurrency", default: 2, null: false
     t.datetime "created_at", null: false
+    t.integer "delay_seconds", default: 1, null: false
     t.text "description", default: "", null: false
+    t.integer "max_depth", default: 1, null: false
+    t.integer "max_pages", default: 20, null: false
     t.string "name", null: false
     t.datetime "updated_at", null: false
     t.text "urls", default: [], null: false, array: true
