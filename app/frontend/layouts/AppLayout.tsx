@@ -11,9 +11,9 @@ type NavItem = {
 }
 
 const navItems: NavItem[] = [
-  { label: "Agents", href: "/agents", matches: (p) => p === "/" || p.startsWith("/agents") },
+  { label: "Email Connection", href: "/email_connection", matches: (p) => p === "/" || p.startsWith("/email_connection") },
+  { label: "Agents", href: "/agents", matches: (p) => p.startsWith("/agents") },
   { label: "Data sources", href: "/data_sources", matches: (p) => p.startsWith("/data_sources") || p.startsWith("/api_connectors") || p.startsWith("/web_connectors") },
-  { label: "Domain", href: "/domain", matches: (p) => p.startsWith("/domain") },
 ]
 
 export default function AppLayout({ children }: { children: ReactNode }) {
@@ -36,7 +36,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <nav className="flex flex-col gap-0.5">
               {navItems.map((item) => {
                 const active = item.matches(path)
-                const needsAttention = item.label === "Domain" && nav && !nav.domain_verified
+                const needsAttention = item.label === "Email Connection" && nav && !nav.email_connection_complete
                 return (
                   <Link
                     key={item.href}

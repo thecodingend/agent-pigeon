@@ -9,10 +9,10 @@ class ApplicationController < ActionController::Base
   inertia_share flash: -> { { notice: flash.notice, alert: flash.alert } }
   inertia_share nav: lambda {
     next nil unless current_user
-    domain = current_user.domain
+    connection = current_user.email_connection
     {
-      domain_verified: domain&.verified? || false,
-      domain_hostname: domain&.hostname
+      email_connection_complete: connection&.complete? || false,
+      support_address: connection&.support_address
     }
   }
 

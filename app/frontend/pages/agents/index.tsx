@@ -9,7 +9,7 @@ import type { SharedProps } from "@/types"
 type AgentRow = {
   id: number
   name: string
-  email_address: string
+  email_address: string | null
   status: "active" | "paused"
   inbox_policy: "open" | "allowlist"
   threads_count: number
@@ -20,8 +20,8 @@ type Props = { agents: AgentRow[] }
 
 export default function AgentsIndex({ agents }: Props) {
   const { nav } = usePage<SharedProps>().props
-  const hasDomain = nav?.domain_verified ?? false
-  const targetHref = hasDomain ? "/agents/new" : "/domain"
+  const hasConnection = nav?.email_connection_complete ?? false
+  const targetHref = hasConnection ? "/agents/new" : "/email_connection"
 
   return (
     <>
@@ -39,12 +39,12 @@ export default function AgentsIndex({ agents }: Props) {
         }
       />
 
-      {agents.length === 0 ? <EmptyState hasDomain={hasDomain} /> : <AgentsTable agents={agents} />}
+      {agents.length === 0 ? <EmptyState hasConnection={hasConnection} /> : <AgentsTable agents={agents} />}
     </>
   )
 }
 
-function EmptyState({ hasDomain }: { hasDomain: boolean }) {
+function EmptyState({ hasConnection }: { hasConnection: boolean }) {
   return (
     <section className="flex flex-col gap-8 py-10">
       <div className="flex max-w-[44ch] flex-col gap-3">
@@ -54,11 +54,11 @@ function EmptyState({ hasDomain }: { hasDomain: boolean }) {
         </p>
       </div>
       <div className="flex items-center gap-3">
-        <Link href={hasDomain ? "/agents/new" : "/domain"} className={buttonVariants()}>
-          {hasDomain ? "Create your first agent" : "Verify a domain first"}
+        <Link href={hasConnection ? "/agents/new" : "/email_connection"} className={buttonVariants()}>
+          {hasConnection ? "Create your first agent" : "Connect email first"}
         </Link>
-        {!hasDomain && (
-          <span className="text-sm text-muted-foreground">— a verified domain is your pigeon&rsquo;s address.</span>
+        {!hasConnection && (
+          <span className="text-sm text-muted-foreground">Set up the support address before agent behavior.</span>
         )}
       </div>
     </section>
@@ -83,7 +83,7 @@ function AgentsTable({ agents }: { agents: AgentRow[] }) {
               className="grid grid-cols-[1.4fr_2fr_0.8fr_0.6fr_0.9fr] items-center gap-6 py-4 transition-colors hover:bg-secondary/40"
             >
               <span className="text-sm font-medium text-foreground">{agent.name}</span>
-              <span className="truncate font-mono text-sm text-foreground">{agent.email_address}</span>
+              <span className="truncate font-mono text-sm text-foreground">{agent.email_address ?? "—"}</span>
               <span className="text-sm text-muted-foreground">{agent.status}</span>
               <span className="font-mono text-sm text-foreground">{agent.threads_count}</span>
               <span className="text-right font-mono text-sm text-muted-foreground">

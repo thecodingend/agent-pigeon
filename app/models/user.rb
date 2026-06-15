@@ -6,13 +6,17 @@ class User < ApplicationRecord
     :confirmable, :omniauthable,
     omniauth_providers: [ :google_oauth2 ]
 
-  has_one :domain, dependent: :destroy
+  has_many :sending_domains, dependent: :restrict_with_error
   has_many :agents, dependent: :destroy
   has_many :api_connectors, dependent: :destroy
   has_many :web_connectors, dependent: :destroy
 
-  def domain_verified?
-    domain&.verified?
+  def email_connection
+    agents.includes(email_connection: :sending_domain).find(&:email_connection)&.email_connection
+  end
+
+  def email_connection_complete?
+    email_connection&.complete? || false
   end
 
   def self.from_google(auth)

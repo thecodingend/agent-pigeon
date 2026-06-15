@@ -4,7 +4,7 @@ import AppLayout from "@/layouts/AppLayout"
 import { PageHeader } from "@/components/page-header"
 import { absoluteTime } from "@/lib/time"
 
-type Agent = { id: number; name: string; email_address: string }
+type Agent = { id: number; name: string; email_address: string | null }
 
 type Thread = {
   id: number

@@ -13,7 +13,7 @@ Rails.application.routes.draw do
   end
 
   authenticated :user do
-    root to: "agents#index", as: :authenticated_root
+    root to: "email_connections#show", as: :authenticated_root
   end
 
   devise_scope :user do
@@ -24,7 +24,11 @@ Rails.application.routes.draw do
     resources :threads, only: [ :index, :show ], controller: "agent_threads"
   end
 
-  resource :domain, only: [ :show, :create, :update, :destroy ]
+  resource :email_connection, only: [ :show, :create, :update ] do
+    post :check_dns
+  end
+
+  post "webhooks/resend", to: "resend_webhooks#create"
 
   resources :data_sources, only: [ :index ]
   resources :api_connectors, only: [ :new, :create, :destroy ]

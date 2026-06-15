@@ -7,10 +7,9 @@ import { AgentForm, type AgentFormValues, type ConnectorOption } from "./_form"
 type Props = {
   agent: AgentFormValues & { email_address?: string }
   connectors: ConnectorOption[]
-  domain: { hostname: string; status: string; verified: boolean }
 }
 
-export default function EditAgent({ agent, connectors, domain }: Props) {
+export default function EditAgent({ agent, connectors }: Props) {
   return (
     <>
       <Head title={`Edit ${agent.name} · Agent Pigeon`} />
@@ -29,7 +28,6 @@ export default function EditAgent({ agent, connectors, domain }: Props) {
       <AgentForm
         agent={agent}
         connectors={connectors}
-        domain={domain}
         method="patch"
         action={`/agents/${agent.id}`}
         submitLabel="Save changes"

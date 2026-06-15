@@ -9,7 +9,6 @@ import { Textarea } from "@/components/ui/textarea"
 export type AgentFormValues = {
   id: number | null
   name: string
-  local_part: string
   system_prompt: string
   status: "active" | "paused"
   inbox_policy: "open" | "allowlist"
@@ -29,14 +28,12 @@ export type ConnectorOption = {
 type Props = {
   agent: AgentFormValues
   connectors: ConnectorOption[]
-  domain: { hostname: string }
   method: "post" | "patch"
   action: string
   submitLabel: string
 }
 
-export function AgentForm({ agent, connectors, domain, method, action, submitLabel }: Props) {
-  const [localPart, setLocalPart] = useState(agent.local_part)
+export function AgentForm({ agent, connectors, method, action, submitLabel }: Props) {
   const [policy, setPolicy] = useState<"open" | "allowlist">(agent.inbox_policy)
   const [patterns, setPatterns] = useState<string[]>(
     agent.allowlist_patterns.length > 0 ? agent.allowlist_patterns : [""],
@@ -72,26 +69,6 @@ export function AgentForm({ agent, connectors, domain, method, action, submitLab
               <FieldError>{errors.name?.[0]}</FieldError>
             </Field>
 
-            <div className="grid grid-cols-[1fr_1.4fr] items-end gap-4">
-              <Field data-invalid={Boolean(errors.local_part)}>
-                <FieldLabel>Local part</FieldLabel>
-                <Input
-                  name="agent[local_part]"
-                  defaultValue={agent.local_part}
-                  onChange={(e) => setLocalPart(e.target.value.toLowerCase())}
-                  placeholder="support"
-                  className="font-mono lowercase"
-                  required
-                />
-                <FieldError>{errors.local_part?.[0]}</FieldError>
-              </Field>
-              <div className="flex flex-col gap-1 pb-2">
-                <span className="text-xs uppercase tracking-wider text-muted-foreground">Email</span>
-                <span className="font-mono text-sm text-foreground break-all">
-                  {(localPart || "support").toLowerCase()}@{domain.hostname}
-                </span>
-              </div>
-            </div>
           </Section>
 
           <Section label="Instructions">

@@ -12,8 +12,8 @@ export type AuthUser = {
 }
 
 export type NavContext = {
-  domain_verified: boolean
-  domain_hostname: string | null
+  email_connection_complete: boolean
+  support_address: string | null
 } | null
 
 export type SharedProps = {
