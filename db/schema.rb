@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_24_132556) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_03_163314) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -64,18 +64,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_132556) do
 
   create_table "agents", force: :cascade do |t|
     t.datetime "created_at", null: false
-    t.bigint "domain_id", null: false
     t.integer "email_threads_count", default: 0, null: false
     t.integer "inbox_policy", default: 0, null: false
     t.datetime "last_activity_at"
-    t.string "local_part", null: false
     t.string "name", null: false
     t.integer "status", default: 0, null: false
     t.text "system_prompt", default: "", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
-    t.index ["domain_id", "local_part"], name: "index_agents_on_domain_id_and_local_part", unique: true
-    t.index ["domain_id"], name: "index_agents_on_domain_id"
     t.index ["user_id"], name: "index_agents_on_user_id"
   end
 
@@ -112,17 +108,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_132556) do
     t.index ["model_id"], name: "index_chats_on_model_id"
   end
 
-  create_table "domains", force: :cascade do |t|
+  create_table "email_connections", force: :cascade do |t|
+    t.bigint "agent_id", null: false
     t.datetime "created_at", null: false
-    t.jsonb "dns_records", default: [], null: false
-    t.string "hostname", null: false
-    t.string "resend_domain_id"
-    t.integer "status", default: 0, null: false
+    t.string "forwarding_address", null: false
+    t.integer "forwarding_status", default: 0, null: false
+    t.datetime "forwarding_verified_at"
+    t.bigint "sending_domain_id", null: false
+    t.string "support_address", null: false
     t.datetime "updated_at", null: false
-    t.bigint "user_id", null: false
-    t.datetime "verified_at"
-    t.index ["hostname"], name: "index_domains_on_hostname", unique: true
-    t.index ["user_id"], name: "index_domains_on_user_id", unique: true
+    t.index ["agent_id"], name: "index_email_connections_on_agent_id", unique: true
+    t.index ["forwarding_address"], name: "index_email_connections_on_forwarding_address", unique: true
+    t.index ["sending_domain_id"], name: "index_email_connections_on_sending_domain_id"
+    t.index ["support_address"], name: "index_email_connections_on_support_address", unique: true
   end
 
   create_table "email_messages", force: :cascade do |t|
@@ -207,6 +205,35 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_132556) do
     t.index ["provider"], name: "index_models_on_provider"
   end
 
+  create_table "resend_webhook_events", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "error_message"
+    t.string "event_type", null: false
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "processed_at"
+    t.integer "status", default: 0, null: false
+    t.string "svix_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_type"], name: "index_resend_webhook_events_on_event_type"
+    t.index ["status"], name: "index_resend_webhook_events_on_status"
+    t.index ["svix_id"], name: "index_resend_webhook_events_on_svix_id", unique: true
+  end
+
+  create_table "sending_domains", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.jsonb "dns_records", default: [], null: false
+    t.string "hostname", null: false
+    t.string "resend_domain_id", null: false
+    t.string "return_path_label", default: "agentpigeon", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.datetime "verified_at"
+    t.index ["hostname"], name: "index_sending_domains_on_hostname", unique: true
+    t.index ["resend_domain_id"], name: "index_sending_domains_on_resend_domain_id", unique: true
+    t.index ["user_id"], name: "index_sending_domains_on_user_id"
+  end
+
   create_table "tool_calls", force: :cascade do |t|
     t.jsonb "arguments", default: {}
     t.datetime "created_at", null: false
@@ -258,19 +285,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_24_132556) do
   add_foreign_key "agent_api_connectors", "api_connectors"
   add_foreign_key "agent_web_connectors", "agents"
   add_foreign_key "agent_web_connectors", "web_connectors"
-  add_foreign_key "agents", "domains"
   add_foreign_key "agents", "users"
   add_foreign_key "allowlist_entries", "agents"
   add_foreign_key "api_connectors", "users"
   add_foreign_key "chats", "email_threads"
   add_foreign_key "chats", "models"
-  add_foreign_key "domains", "users"
+  add_foreign_key "email_connections", "agents"
+  add_foreign_key "email_connections", "sending_domains"
   add_foreign_key "email_messages", "email_threads"
   add_foreign_key "email_messages", "messages"
   add_foreign_key "email_threads", "agents"
   add_foreign_key "messages", "chats"
   add_foreign_key "messages", "models"
   add_foreign_key "messages", "tool_calls"
+  add_foreign_key "sending_domains", "users"
   add_foreign_key "tool_calls", "messages"
   add_foreign_key "web_connectors", "users"
 end

@@ -3,6 +3,8 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
+  config.hosts << ENV["DEV_TUNNEL_HOST"] if ENV["DEV_TUNNEL_HOST"].present?
+
   # Make code changes take effect immediately without server restart.
   config.enable_reloading = true
 

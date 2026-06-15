@@ -8,7 +8,7 @@ import { relativeTime } from "@/lib/time"
 type Agent = {
   id: number
   name: string
-  email_address: string
+  email_address: string | null
   status: "active" | "paused"
   inbox_policy: "open" | "allowlist"
   threads_count: number
@@ -35,7 +35,7 @@ export default function AgentShow({ agent, threads }: Props) {
         title={agent.name}
         meta={
           <div className="flex items-center gap-3">
-            <span className="font-mono text-sm text-foreground">{agent.email_address}</span>
+            <span className="font-mono text-sm text-foreground">{agent.email_address ?? "No support address"}</span>
             {agent.status === "paused" && (
               <>
                 <span className="text-muted-foreground">·</span>
@@ -51,17 +51,17 @@ export default function AgentShow({ agent, threads }: Props) {
         }
       />
 
-      {threads.length === 0 ? <EmptyThreads agent={agent} /> : <ThreadsTable agent={agent} threads={threads} />}
+      {threads.length === 0 ? <EmptyThreads /> : <ThreadsTable agent={agent} threads={threads} />}
     </>
   )
 }
 
-function EmptyThreads({ agent }: { agent: Agent }) {
+function EmptyThreads() {
   return (
     <section className="flex max-w-[44ch] flex-col gap-3 py-10">
       <p className="text-xl text-foreground">Nothing yet.</p>
       <p className="text-sm text-muted-foreground">
-        Send a note to <span className="font-mono text-foreground select-all">{agent.email_address}</span> to start a thread. We&rsquo;ll log it here.
+        Email handling starts after the connection is ready.
       </p>
     </section>
   )

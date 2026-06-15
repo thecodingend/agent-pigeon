@@ -1,29 +1,27 @@
 class AgentsController < InertiaController
   before_action :set_agent, only: [ :show, :edit, :update, :destroy ]
-  before_action :require_verified_domain, only: [ :new, :create ]
 
   def index
-    agents = policy_scope(Agent).includes(:domain).order(:name).map { |a| serialize_agent(a) }
+    agents = policy_scope(Agent).includes(:email_connection).order(:name).map { |a| serialize_agent(a) }
     render inertia: { agents: agents }
   end
 
   def new
     authorize Agent
     render inertia: {
-      agent: { id: nil, name: "", local_part: "", system_prompt: "", status: "active", inbox_policy: "open", api_connector_ids: [], web_connector_ids: [], allowlist_patterns: [] },
-      domain: serialize_domain(current_user.domain),
+      agent: { id: nil, name: "", system_prompt: "", status: "active", inbox_policy: "open", api_connector_ids: [], web_connector_ids: [], allowlist_patterns: [] },
       connectors: connector_picker_options
     }
   end
 
   def create
-    agent = current_user.agents.new(agent_params.merge(domain: current_user.domain))
+    agent = current_user.agents.new(agent_params)
     authorize agent
     attach_connectors(agent)
     sync_allowlist(agent, params.dig(:agent, :allowlist_patterns))
 
     if agent.save
-      redirect_to agent_path(agent), notice: "Agent created. Send a note to #{agent.email_address} to start a thread."
+      redirect_to agent_path(agent), notice: "Agent created."
     else
       redirect_back_or_to new_agent_path, inertia: { errors: agent.errors.to_hash(true) }
     end
@@ -46,7 +44,6 @@ class AgentsController < InertiaController
   def edit
     render inertia: {
       agent: serialize_agent_for_form(@agent),
-      domain: serialize_domain(current_user.domain),
       connectors: connector_picker_options
     }
   end
@@ -74,13 +71,8 @@ class AgentsController < InertiaController
     authorize @agent
   end
 
-  def require_verified_domain
-    return if current_user.domain_verified?
-    redirect_to domain_path, alert: "Verify a domain first — your pigeon needs an address."
-  end
-
   def agent_params
-    params.expect(agent: [ :name, :local_part, :system_prompt, :status, :inbox_policy ])
+    params.expect(agent: [ :name, :system_prompt, :status, :inbox_policy ])
   end
 
   def attach_connectors(agent)
@@ -114,7 +106,6 @@ class AgentsController < InertiaController
     {
       id: agent.id,
       name: agent.name,
-      local_part: agent.local_part,
       email_address: agent.email_address,
       status: agent.status,
       inbox_policy: agent.inbox_policy,
@@ -133,8 +124,4 @@ class AgentsController < InertiaController
     )
   end
 
-  def serialize_domain(domain)
-    return nil unless domain
-    { hostname: domain.hostname, status: domain.status, verified: domain.verified? }
-  end
 end
