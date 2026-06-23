@@ -70,4 +70,4 @@ gem "pundit", "~> 2.5.2"
 
 gem "ruby_llm"
 
-gem "resend", "~> 1.3"
+gem "resend", "~> 1.5"
